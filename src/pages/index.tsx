@@ -15,6 +15,7 @@ interface HomeProps {
     name: string;
     imageUrl: string;
     price: number;
+    price_formatted: string;
   }[];
 };
 
@@ -43,7 +44,7 @@ export default function Home({ products }: HomeProps) {
             <footer>
               <strong>{product.name}</strong>
 
-              <span>{product.price}</span>
+              <span>{product.price_formatted}</span>
             </footer>
           </Product>
         )
@@ -65,6 +66,10 @@ export const getStaticProps: GetStaticProps = async () => {
       name: product.name,
       imageUrl: product.images[0],
       price: price.unit_amount / 100,
+      price_formatted: new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(price.unit_amount / 100),
     };
   });
 
