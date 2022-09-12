@@ -53,11 +53,13 @@ export default function Product({ product }: ProductProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
+    // Buscar os produtos mais vendidos / mais recentes
+
     return {
         paths: [
             { params: { id: "prod_MQ7KTYcstmPkj3" } }
         ],
-        fallback: false,
+        fallback: 'blocking',
     };
 };
 
