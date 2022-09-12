@@ -1,4 +1,4 @@
-import { GetStaticProps } from "next";
+import { GetStaticPaths, GetStaticProps } from "next";
 import Image from "next/future/image";
 import Stripe from "stripe";
 
@@ -52,6 +52,15 @@ export default function Product({ product }: ProductProps) {
     )
 }
 
+export const getStaticPaths: GetStaticPaths = async () => {
+    return {
+        paths: [
+            { params: { id: "prod_MQ7KTYcstmPkj3" } }
+        ],
+        fallback: false,
+    };
+};
+
 export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ params }) => {
     const { id: productId } = params;
 
@@ -77,4 +86,4 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
         },
         revalidate: 60 * 60 * 1, // 1 hour
     };
-}
+};
