@@ -1,5 +1,8 @@
+import { GetStaticProps } from "next";
 import Image from "next/future/image";
-import { useRouter } from "next/router";
+import Stripe from "stripe";
+
+import { stripe } from "../../lib/stripe";
 
 import {
     ProductContainer,
@@ -7,30 +10,39 @@ import {
     ProductDetails
 } from "../../styles/pages/product";
 
-export default function Product() {
-    const { query } = useRouter();
+interface ProductProps {
+    product: {
+        id: string;
+        name: string;
+        description: string;
+        imageUrl: string;
+        price: number;
+        price_formatted: string;
+    };
+};
 
+export default function Product({ product }: ProductProps) {
     return (
         <ProductContainer>
             <ImageContainer>
                 <Image
-                    src="https://files.stripe.com/links/MDB8YWNjdF8xTGhIMWFHb3BkTHZMc2JQfGZsX3Rlc3RfNUx3MEd4NDBWaU0yRVppbGRmdjNSY1JX00bjOc0jlD"
+                    src={product.imageUrl}
                     width={520}
                     height={480}
-                    alt="Alt"
+                    alt={product.name}
                     placeholder="blur"
-                    blurDataURL="https://files.stripe.com/links/MDB8YWNjdF8xTGhIMWFHb3BkTHZMc2JQfGZsX3Rlc3RfNUx3MEd4NDBWaU0yRVppbGRmdjNSY1JX00bjOc0jlD"
+                    blurDataURL={product.imageUrl}
                 />
             </ImageContainer>
 
             <ProductDetails>
                 <h1>
-                    Camiseta X
+                    {product.name}
                 </h1>
 
-                <span>R$ 79,99</span>
+                <span>{product.price_formatted}</span>
 
-                <p>TESTETESTESESTE</p>
+                <p>{product.description}</p>
 
                 <button>
                     Comprar agora
@@ -38,4 +50,31 @@ export default function Product() {
             </ProductDetails>
         </ProductContainer>
     )
+}
+
+export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ params }) => {
+    const { id: productId } = params;
+
+    const product = await stripe.products.retrieve(productId, {
+        expand: ['default_price']
+    });
+
+    const price = product.default_price as Stripe.Price;
+
+    return {
+        props: {
+            product: {
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                imageUrl: product.images[0],
+                price: price.unit_amount / 100,
+                price_formatted: new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                }).format(price.unit_amount / 100),
+            },
+        },
+        revalidate: 60 * 60 * 1, // 1 hour
+    };
 }
